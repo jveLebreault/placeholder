@@ -26,7 +26,7 @@ class SqliteDialect(BaseSqlDialect):
 
     DIALECT = "sqlite"
 
-    DIALECT_TYPES = {int: 'INTEGER', float: 'REAL', str: 'TEXT', None: 'NULL' }
+    DATA_TYPES = {int: 'INTEGER', float: 'REAL', str: 'TEXT', None: 'NULL' }
     
     def __init__(self, dbUri):
         import sqlite3
@@ -35,7 +35,7 @@ class SqliteDialect(BaseSqlDialect):
 
 
     def createTable(self, table: str, fields):
-        statement = "CREATE TABLE IF NOT EXIST {} ".format(table)
+        statement = "CREATE TABLE IF NOT EXIST {} (".format(table)
         for field in fields:
             field[0] + field[1]
         pass
@@ -44,9 +44,8 @@ class SqliteDialect(BaseSqlDialect):
     def insertInto(self, table: str, values: list, field_count):
         statement = "INSERT INTO {} VALUES ".format(table)
 
-        wildcards = ["?" if field_count == 1 or i == (field_count - 1) else "?, " 
-                        for i in range(field_count)]
-        insert_statement = statement + "("+''.join(wildcards) + ")"
+        wildcards = ','.join(['?'] * field_count)
+        insert_statement = statement + "("+ wildcards +")"
 
         if field_count > 1:
             self.cursor.executemany(insert_statement, values)

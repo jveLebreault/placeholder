@@ -1,7 +1,9 @@
 from configparser import ConfigParser
-import os
+from databases.dialects import SqliteDialect
 import os.path as path
 import csv
+import os
+
 
 BASE_CONFIG_PATH = path.join(os.path.dirname(__file__), 'config.ini')
 
@@ -19,9 +21,17 @@ class CsvToDatabase:
         self.config = load_config(config_path, config_dict)
         self.cvsDirectories = self.config.get('csv', 'directories').split(',')
         self.databaseType = self.config.get('database', 'type')
-        self.csvFileList = self.getCsvFilesToProcess()
+        self.csvFilePaths = self.getCsvFilesToProcess()
         SUPPORTED_DATABASE.get(self.databaseType, RaiseDatabaseNotSupportedError)()
-        
+
+
+    def persistFiles(self):
+        db_url = self.config.get('database', 'url')
+        with CsvToDatabase(db_url) as csvImporter:
+            for file_path in self.csvFilePaths:
+                with open(file_path) as csv_file:
+                    reader = csv.DictReader(csv_file)
+            
 
     
     def getCsvFilesToProcess(self) -> list:
@@ -53,4 +63,20 @@ def load_config(config_path=None, config_dict: dict = None):
             config.read(config_path)
 
     return config
+
+def getTypeOf(value):
+
+    try:
+        int(value)
+        return int
+    except ValueError:
+        pass
+    
+    try:
+        float(value)
+        return float
+    except ValueError:
+        pass
+    
+    return str
 
