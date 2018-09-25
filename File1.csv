@@ -1,0 +1,3 @@
+ID,Name,Description,Type
+001,Allergen,Contains Allergen information,C
+002,Attribute,Contains additional attributes,F
